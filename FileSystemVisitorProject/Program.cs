@@ -11,18 +11,41 @@ namespace FileSystemVisitorProject
         static void Main(string[] args)
         {
          
-             FileSystemVisitor fileVisitor = new FileSystemVisitor();
-             fileVisitor.StartEvent += () => {
+             FileSystemVisitor fileVisitor = new FileSystemVisitor(@"C:\Users\Amrah\Downloads\task2_advanced_c#\02. Advanced CSharp",(x) =>  { return x.Contains(".txt"); });
+             fileVisitor.StartEvent += (object o, EventArgs  e) => {
                  Console.WriteLine(" FileVisitor started");
              };
-            fileVisitor.FinishEvent += () =>
+            fileVisitor.FinishEvent += (object o, EventArgs e) =>
             {
                 Console.WriteLine("FileVisitor finished");
             };
-
-           foreach(var file in fileVisitor.ListDirectories(@"C:\Users\Amrah\Downloads\task2_advanced_c#\02. Advanced CSharp"))
+            fileVisitor.DirectoryFindedEvent += (o, e) => {
+                Console.WriteLine("Directory Found: " +e.FindedName);
+            };
+            fileVisitor.FileFindedEvent += (o,e) =>{
+                Console.WriteLine("File Found: " + e.FindedName);
+            };
+            fileVisitor.FilteredDirectoryFindedEvent += (o, e) =>
             {
-                Console.WriteLine(file);
+                Console.WriteLine("!!!Filtered Directory Found:" + e.FilteredFindedName);
+
+            };
+
+            fileVisitor.FilteredFileFindedEvent += (o, e) =>
+            {
+               
+               if (e.FilteredFindedName.Contains("dummy")) e.StopSearch = true;
+                if (e.FilteredFindedName.Contains(".pptx")) { 
+                    e.ExcludeFinded = true;
+                    Console.WriteLine("Excluded file: "+e.FilteredFindedName);
+                }
+                Console.WriteLine("!!!Filtered File Found:" + e.FilteredFindedName);
+            };
+ 
+
+           foreach(var file in fileVisitor.ListDirectories())
+            {
+              // Console.WriteLine(file);
             }
               
 

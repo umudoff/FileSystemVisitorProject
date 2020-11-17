@@ -8,25 +8,94 @@ using System.Threading.Tasks;
 
 namespace FileSystemVisitorProject
 {
-    public delegate void StartDelegate();
-    public delegate void FinishDelegate();
+     
     public class FileSystemVisitor
     {
-        public event StartDelegate StartEvent;
-        public event FinishDelegate FinishEvent;
+        private string path;
 
-        public IEnumerable ListDirectories(string path)
+        private Func<string, bool> filterLogic;
+
+
+        public class FindedEventArgs: EventArgs
         {
-            StartEvent();
+            public string FindedName { get; set; }
+        }
 
-            var listDirs = new List<string>(Directory.GetDirectories(path));
+        public class FilteredFindedEventArgs : EventArgs
+        {
+            public string FilteredFindedName { get; set; }
+            public bool StopSearch;
+            public bool ExcludeFinded;
+        }
 
+
+        public event EventHandler StartEvent;
+        public event EventHandler FinishEvent;
+        public event EventHandler<FindedEventArgs> FileFindedEvent;
+        public event EventHandler<FindedEventArgs> DirectoryFindedEvent;
+        public event EventHandler<FilteredFindedEventArgs> FilteredFileFindedEvent;
+        public event EventHandler<FilteredFindedEventArgs> FilteredDirectoryFindedEvent;
+
+        public FileSystemVisitor(string path)
+        {
+            this.path = path;
+        }
+
+        public FileSystemVisitor(string path, Func<string, bool> filterLogic)
+        {
+            this.path = path;
+            this.filterLogic = filterLogic;
+        }
+
+
+
+
+        public IEnumerable ListDirectories()
+        {
+            StartEvent?.Invoke(this, new EventArgs());
+            var listDirs = new List<string>(Directory.GetFileSystemEntries(path,"*.*", SearchOption.AllDirectories));
+           
             foreach (var file in listDirs)
             {
+
+
+                if (Directory.Exists(file))
+                {
+                    DirectoryFindedEvent?.Invoke(this, new FindedEventArgs { FindedName = file });
+                }
+                else
+                {
+                    FileFindedEvent?.Invoke(this, new FindedEventArgs { FindedName= file});
+                }
+
+                if (filterLogic!=null)
+                {
+                    if (filterLogic(file))
+                    {
+                        if (Directory.Exists(file))
+                        {
+                            var fArgs = new FilteredFindedEventArgs { FilteredFindedName = file };
+                            FilteredDirectoryFindedEvent?.Invoke(this, fArgs);
+                            if (fArgs.StopSearch) yield break;
+                        }
+
+                        if (File.Exists(file))
+                        {
+                            var fArgs = new FilteredFindedEventArgs { FilteredFindedName = file };
+                            FilteredFileFindedEvent?.Invoke(this, fArgs);
+                            if (fArgs.StopSearch) yield break;
+                            if(fArgs.ExcludeFinded) continue;
+                        }
+
+                    }
+
+                }
+
+                
                 yield return file;
             }
 
-            FinishEvent();
+            FinishEvent?.Invoke(this, new EventArgs());
         }
 
     }
