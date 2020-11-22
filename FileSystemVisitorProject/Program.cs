@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,8 +12,8 @@ namespace FileSystemVisitorProject
     {
         static void Main(string[] args)
         {
-         
-             FileSystemVisitor fileVisitor = new FileSystemVisitor(@"C:\Users\Amrah\Downloads\task2_advanced_c#\02. Advanced CSharp",(x) =>  { return x.Contains(".txt"); });
+            
+            FileSystemVisitor fileVisitor = new FileSystemVisitor(@"C:\Users\Amrah\Downloads\task2_advanced_c#\02. Advanced CSharp",(x) =>  { return x.Contains(".txt"); });
              fileVisitor.StartEvent += (object o, EventArgs  e) => {
                  Console.WriteLine(" FileVisitor started");
              };
@@ -27,9 +29,10 @@ namespace FileSystemVisitorProject
             };
             fileVisitor.FilteredDirectoryFindedEvent += (o, e) =>
             {
-                Console.WriteLine("!!!Filtered Directory Found:" + e.FilteredFindedName);
+                Console.WriteLine("Filtered Directory Found:" + e.FilteredFindedName);
 
             };
+             
 
             fileVisitor.FilteredFileFindedEvent += (o, e) =>
             {

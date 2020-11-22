@@ -50,7 +50,7 @@ namespace FileSystemVisitorProject
 
 
 
-        public IEnumerable ListDirectories()
+        public IEnumerable<String> ListDirectories()
         {
             StartEvent?.Invoke(this, new EventArgs());
             var listDirs = new List<string>(Directory.GetFileSystemEntries(path,"*.*", SearchOption.AllDirectories));
@@ -77,14 +77,16 @@ namespace FileSystemVisitorProject
                             var fArgs = new FilteredFindedEventArgs { FilteredFindedName = file };
                             FilteredDirectoryFindedEvent?.Invoke(this, fArgs);
                             if (fArgs.StopSearch) yield break;
+                            if (fArgs.ExcludeFinded) continue;
                         }
 
                         if (File.Exists(file))
                         {
                             var fArgs = new FilteredFindedEventArgs { FilteredFindedName = file };
                             FilteredFileFindedEvent?.Invoke(this, fArgs);
+                            if (fArgs.ExcludeFinded) continue;
                             if (fArgs.StopSearch) yield break;
-                            if(fArgs.ExcludeFinded) continue;
+                           
                         }
 
                     }
